@@ -1,0 +1,51 @@
+-- Customers table
+CREATE TABLE IF NOT EXISTS customers (
+    cust_id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE,
+    phone TEXT NOT NULL,
+    city TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+ 
+-- Products table
+CREATE TABLE IF NOT EXISTS products (
+    prod_id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    sku TEXT UNIQUE NOT NULL,
+    price NUMERIC(10,2) NOT NULL CHECK (price > 0),
+    stock INT NOT NULL DEFAULT 0,
+    category TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+ 
+-- Orders table
+create table public.orders (
+  order_id serial not null,
+  cust_id integer null,
+  order_date timestamp with time zone null default now(),
+  status text null default 'PLACED'::text,
+  total_amount numeric(12, 2) null,
+  constraint orders_pkey primary key (order_id),
+  constraint orders_cust_id_fkey foreign KEY (cust_id) references customers (cust_id) on delete CASCADE
+) TABLESPACE pg_default;
+ 
+-- Order Items table
+CREATE TABLE IF NOT EXISTS order_items (
+    item_id SERIAL PRIMARY KEY,
+    order_id INT REFERENCES orders(order_id) ON DELETE CASCADE,
+    prod_id INT REFERENCES products(prod_id),
+    quantity INT NOT NULL CHECK (quantity > 0),
+    price NUMERIC(10,2) NOT NULL
+);
+ 
+-- Payments table
+CREATE TABLE IF NOT EXISTS payments (
+    payment_id SERIAL PRIMARY KEY,
+    order_id INT REFERENCES orders(order_id) ON DELETE CASCADE,
+    amount NUMERIC(12,2),
+    method TEXT,
+    paid_at TIMESTAMPTZ,
+    status TEXT
+);
+ 
